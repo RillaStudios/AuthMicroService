@@ -3,9 +3,9 @@ from enum import Enum
 
 class FieldType(str, Enum):
     STRING = "string"
-    INTEGER = "integer"
+    INT = "int"
     FLOAT = "float"
-    BOOLEAN = "boolean"
+    BOOL = "bool"
     DATE = "date"
     DATETIME = "datetime"
     TEXT = "text"
