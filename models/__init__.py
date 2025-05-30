@@ -1,3 +1,3 @@
-from .user_model import User
-from .user_field_model import UserFieldDefinition
-from .user_field_value_model import UserFieldValue
+from models.user.user_model import User
+from models.user_fields.user_field_model import UserFieldDefinition
+from models.user_fields.user_field_value_model import UserFieldValue

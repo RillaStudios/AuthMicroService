@@ -16,8 +16,3 @@ class User(SQLModel, table=True):
     last_updated_at: datetime | None = Field(default=None, nullable=True)
 
     custom_fields: List["UserFieldValue"] = Relationship(back_populates="user") # type: ignore
-
-external_data = {
-    "id": "123",
-    "username": "izaakford",
-}

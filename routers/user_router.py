@@ -1,46 +1,38 @@
-from typing import Any
-from fastapi import APIRouter, HTTPException
+from typing import Any, Optional
+from uuid import UUID
+
+from fastapi import APIRouter, HTTPException, Query
 from sqlmodel import select
 from app.database import SessionDep
 from app.utils.password import hash_password
 from models import User, UserFieldDefinition, UserFieldValue
-from models.user_create import UserCreate
+from models.user.user_create import UserCreate
+from models.user.user_read import UserRead
 
 user_router = APIRouter(prefix="/user", tags=["user"])
 
 
-@user_router.get("/")
+@user_router.get("/list")
 async def get_user():
     return {"message": "Get all users"}
 
-@user_router.get("/id/{uid}")
-async def get_user_by_id(uid, session: SessionDep):
+@user_router.get("/")
+async def get_user(
+    uid: Optional[UUID] = Query(None),
+    email: Optional[str] = Query(None),
+    session: SessionDep = None
+):
+    if uid is not None:
+        statement = select(User).where(User.id == uid)
+    elif email is not None:
+        statement = select(User).where(User.email == email)
+    else:
+        raise HTTPException(status_code=400, detail="Must provide either id or email")
 
-    if not isinstance(uid, int) or uid is None:
-        return HTTPException(status_code=400, detail="Invalid user ID")
-
-    statement = select(User).where(User.id == uid)
     user = session.exec(statement).first()
-
     if not user:
-        return HTTPException(status_code=404, detail="User not found")
-
+        raise HTTPException(status_code=404, detail="User not found")
     return user
-
-@user_router.get('/email/{email}')
-async def get_user_by_username(email, session: SessionDep):
-
-    if not isinstance(email, str) or email is None:
-        return HTTPException(status_code=400, detail="Invalid username")
-
-    statement = select(User).where(User.email == email)
-    user = session.exec(statement).first()
-
-    if not user:
-        return HTTPException(status_code=404, detail="User not found")
-
-    return user
-
 
 @user_router.post('/register')
 async def register_user(user: UserCreate, session: SessionDep):
@@ -90,4 +82,4 @@ async def register_user(user: UserCreate, session: SessionDep):
 
     session.commit()
 
-    return {"message": "User registered successfully", "user": new_user}
+    return {"message": "User registered successfully", "user": UserRead.model_validate(new_user)}
